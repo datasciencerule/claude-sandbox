@@ -1,4 +1,4 @@
-# Claude Code Sandbox - Lite Build
+# Claude Code Sandbox - Build
 
 A lightweight (~1.5GB) Docker image for running Claude Code with either direct Anthropic API or AWS Bedrock.
 
@@ -63,7 +63,7 @@ Target: **~1.5GB** (compared to ~6.8GB full image)
 After building, copy the runtime files to your project:
 
 ```bash
-cp -r ../runtime-lite/* /path/to/your/project/
+cp -r ../runtime/* /path/to/your/project/
 cd /path/to/your/project
 ./start-sandbox.sh
 ```
