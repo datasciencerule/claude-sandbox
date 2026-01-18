@@ -2,7 +2,7 @@
 
 ## Sandbox Environment
 
-This Claude Code is running in a lightweight Docker sandbox. Your workspace (`/workspace`) is mounted from the host project directory.
+You are running inside a lightweight Docker sandbox (`claude-sandbox-lite`). Your workspace (`/workspace`) is mounted from the host project directory.
 
 ### Available Languages & Runtimes
 
@@ -13,8 +13,8 @@ This Claude Code is running in a lightweight Docker sandbox. Your workspace (`/w
 
 ### Python Environment
 
-#### Package Manager
-- **uv** - Fast package manager; use for virtual environments
+#### Package Managers
+- **uv** - Fast package manager (recommended for virtual environments)
 - **pip3** - Standard package manager
 
 #### Recommended: Use Virtual Environments
@@ -39,30 +39,30 @@ uv pip install package-name
 **Utilities:**
 - `PyYAML`, `tqdm`
 
-### System Tools
+### CLI Tools
 
-#### CLI Tools
 - **AWS CLI v2** - Cloud operations (for Bedrock)
 - **GitHub CLI (`gh`)** - GitHub operations (use `gh auth login` to authenticate)
-- **Git** with **delta** - Version control with syntax highlighting
+- **git** with **delta** - Version control with syntax-highlighted diffs
+- **uv** - Fast Python package manager
 - **jq** - JSON processor
 - **curl**, **wget** - HTTP clients
 - **poppler-utils** - PDF utilities (`pdftotext`, `pdftoppm`, etc.)
 
-#### Editors
+### Editors
 - **nano** (default), **vim**
 
 ### File Structure
 
 | Path | Purpose |
 |------|---------|
-| `/workspace` | Your project directory (mounted from host) |
+| `/workspace` | Project directory (mounted from host) |
 | `/workspace/.venv` | Python virtual environment (create with `uv venv`) |
-| `/home/node/.claude` | Claude Code global settings |
+| `/home/node/.claude` | Claude Code settings (persisted in Docker volume) |
 
 ### API Configuration
 
-This sandbox supports two API modes (configure in `.env`):
+This sandbox supports two API modes (configured via `.env` file in the project):
 
 #### Direct Anthropic API
 ```bash
@@ -105,7 +105,8 @@ node script.js
 
 ### Notes
 
-- Shell: `zsh` (default) with fzf integration
-- Editor: `nano` (default), `vim` available
-- Your project files persist on the host; container state persists in Docker volumes
-- No proxy configuration required - direct internet access
+- Shell: `zsh` with fzf integration
+- Default editor: `nano` (vim also available)
+- Project files persist on host; Claude settings persist in Docker volumes
+- SSL verification disabled for git/npm (for corporate proxy compatibility)
+- Container runs as `node` user with UID/GID mapped to host user
