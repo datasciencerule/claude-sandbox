@@ -1,155 +1,103 @@
 # CLAUDE.md
 
-## Sandbox Environment
+## About This Repository
 
-This Claude Code is running in a Docker-based sandbox environment behind Merck's corporate firewall with configurable internet access control. Your workspace (`/workspace`) is mounted from the host project directory.
+This repository provides a lightweight Docker-based sandbox for running Claude Code. It builds a ~1.5GB image that supports both direct Anthropic API and AWS Bedrock.
 
-### Available Languages & Runtimes
+## Repository Structure
 
+```
+├── build/                  # Docker image build files
+│   ├── Dockerfile          # Image definition
+│   ├── build.sh           # Build script
+│   ├── entrypoint.sh      # Container entrypoint (UID/GID mapping)
+│   ├── python-packages.txt # Python dependencies
+│   └── README.md          # Build documentation
+├── runtime/               # Files to copy to user projects
+│   └── Claude.md          # Claude Code instructions for runtime
+└── CLAUDE.md              # This file (repo instructions)
+```
+
+## Building the Image
+
+```bash
+cd build
+./build.sh                    # Standard build
+./build.sh --no-cache         # Clean rebuild
+./build.sh --version 1.0.75   # Specific Claude Code version
+```
+
+## What's Included in the Image
+
+### Languages & Runtimes
 | Language | Version | Command |
 |----------|---------|---------|
-| **Node.js** | 24.x | `node`, `npm` |
-| **Python** | 3.12.12 | `python3`, `pip3` |
-| **R** | 4.5.2 | `R`, `Rscript` |
+| Node.js | 24.x | `node`, `npm` |
+| Python | 3.11.x | `python3`, `pip3` |
 
-### Python Environment
+### Pre-installed Python Packages
+- **Data Science**: pandas, numpy, scipy, matplotlib
+- **Document Processing**: pypdf, python-pptx, python-docx, openpyxl, Pillow
+- **Web/Parsing**: beautifulsoup4, lxml, requests
+- **Utilities**: PyYAML, tqdm
 
-#### Package Manager
-- **uv** (0.9.21) - Fast package manager; use for virtual environments
-- **pip3** - Standard package manager
-
-#### Recommended: Use Virtual Environments
-```bash
-uv venv && source .venv/bin/activate
-uv pip install package-name
-```
-
-#### Pre-installed Python Packages
-
-**Data Science & Math:**
-- `numpy` (1.26.4), `scipy` (1.12.0), `pandas` (2.2.1)
-- `scikit-learn` (1.4.1), `scikit-image` (0.22.0)
-- `sympy` (1.12.1), `networkx` (3.3)
-
-**Visualization:**
-- `matplotlib` (3.8.3), `seaborn` (0.13.2)
-
-**Computer Vision & Images:**
-- `opencv-python` (4.9.0), `Pillow`
-- `pytesseract` (0.3.10), `pycocotools` (2.0.8)
-
-**Document Processing:**
-- PDF: `pypdf`, `pdf2image`, `PyPDF2` (3.0.1), `pdfminer.six`
-- Office: `python-pptx`, `python-docx` (1.1.0), `openpyxl` (3.1.2), `xlrd`, `xlwt`
-- Web/XML: `beautifulsoup4` (4.12.3), `lxml` (5.2.2), `defusedxml`
-
-**Audio/Video:**
-- `ffmpeg-python`
-
-**Utilities:**
-- `requests` (2.32.3), `tqdm` (4.66.4), `PyYAML` (6.0.1)
-- `bcrypt` (4.3.0), `markdown` (3.7)
-
-### R Environment
-
-#### Pre-installed R Packages
-
-**Core & Tidyverse:**
-- `tidyverse`, `dplyr`, `ggplot2`, `devtools`, `roxygen2`
-
-**Statistics & Bayesian Analysis:**
-- `rstan`, `brms`, `lme4`, `binom`, `MASS`, `Matrix`, `mgcv`
-
-**Machine Learning:**
-- `xgboost`, `randomForest`, `randomForestSRC`, `caret`
-- `e1071`, `rpart`, `nnet`
-
-**Survival Analysis:**
-- `survival`, `survMisc`, `survminer`
-
-**Design of Experiments & Testing:**
-- `rsm`, `DoE.base`, `FrF2`, `multcomp`, `nparcomp`, `pwr`
-
-**Reporting:**
-- `r2rtf`, `rtf`
-
-**User library path:** `/workspace/.rlibs` (persisted in project folder)
-
-### System Tools
-
-#### CLI Tools
-- **AWS CLI v2** - Cloud operations
-- **GitHub CLI (`gh`)** - GitHub operations (use `gh auth login` to authenticate)
-- **Git** with **delta** (0.18.2) - Version control with syntax highlighting
-- **jq** - JSON processor
+### CLI Tools
+- **AWS CLI v2** - For Bedrock integration
+- **GitHub CLI (gh)** - Repository management
+- **git** with **delta** - Syntax-highlighted diffs
+- **uv** - Fast Python package manager
+- **jq** - JSON processing
 - **curl**, **wget** - HTTP clients
+- **poppler-utils** - PDF utilities
+- **vim**, **nano** - Text editors
+- **zsh** with **fzf** - Shell with fuzzy finder
 
-#### Media & Document Processing
-- **ffmpeg** - Audio/video processing
-- **ImageMagick** - Image manipulation
-- **Tesseract OCR** - Optical character recognition
-- **Pandoc** - Document conversion
-- **LibreOffice** - Office document processing (headless)
-- **poppler-utils** - PDF utilities (`pdftotext`, `pdftoppm`, etc.)
+## What's NOT Included
 
-#### Build Tools
-- **make**, **cmake**, **g++**, **gfortran**
+This is a lightweight image. The following are excluded:
+- R language and packages
+- LibreOffice, ffmpeg, ImageMagick
+- Tesseract OCR, GDAL/GEOS/PROJ
+- Heavy ML libraries (scikit-learn, opencv, pytorch, etc.)
 
-### File Structure
+## Key Files
 
-| Path | Purpose |
-|------|---------|
-| `/workspace` | Your project directory (mounted from host) |
-| `/workspace/.venv` | Python virtual environment (create with `uv venv`) |
-| `/home/node/.claude` | Claude Code global settings |
-| `/workspace/.rlibs` | User R packages (persisted) |
+### build/Dockerfile
+Defines the Docker image. Key features:
+- Based on `node:24-slim`
+- Installs system packages, AWS CLI, GitHub CLI
+- Installs Python packages from `python-packages.txt`
+- Installs Claude Code via npm
+- Uses `entrypoint.sh` for dynamic UID/GID mapping
 
-### Network Access
+### build/entrypoint.sh
+Handles dynamic UID/GID mapping at runtime. Allows the container to run with the host user's permissions via `HOST_UID` and `HOST_GID` environment variables.
 
-The sandbox runs behind a corporate proxy with firewall restrictions and configurable internet access control.
+### build/python-packages.txt
+Lists Python packages to pre-install. Modify this to add/remove packages from the image.
 
-#### HTTP/HTTPS (via proxy)
-Web traffic passes through the corporate proxy. You can access:
-- Package registries (npm, PyPI, CRAN)
-- GitHub, Hugging Face
-- AWS Bedrock, Anthropic APIs
-- Scientific databases (ClinicalTrials.gov, PubMed/NCBI, FDA)
-The access list can be expanded upon request.
+### runtime/Claude.md
+Template CLAUDE.md for projects using this sandbox. Copy to user projects along with start scripts.
 
-#### Non-HTTP Protocols (Blocked by default in the sandbox)
-SSH, database connections, FTP, and direct IP connections are blocked unless explicitly allowed.
+## API Configuration
 
-### Common Tasks
+The sandbox supports two modes (configured via `.env` in user projects):
 
-#### Create a Python virtual environment
+### Direct Anthropic API
 ```bash
-uv venv && source .venv/bin/activate
+ANTHROPIC_API_KEY=sk-ant-api03-...
 ```
 
-#### Install Python packages
+### AWS Bedrock
 ```bash
-# In virtual environment (recommended)
-uv pip install package-name
-
-# System-wide (use sparingly)
-pip3 install package-name
+CLAUDE_CODE_USE_BEDROCK=1
+AWS_PROFILE=your-profile
+AWS_REGION=us-east-1
 ```
 
-#### Authenticate with GitHub
-```bash
-gh auth login
-```
+## Development Notes
 
-#### Run scripts
-```bash
-python3 script.py
-Rscript script.R
-node script.js
-```
-
-### Notes
-
-- Shell: `zsh` (default) with fzf integration
-- Editor: `nano` (default), `vim` available
-- SSL verification is disabled for git and npm due to corporate proxy
-- Your project files persist on the host; container state persists in Docker volumes
+- Image builds in ~5-10 minutes depending on cache
+- Target size is ~1.5GB (vs ~6.8GB for full-featured images)
+- SSL verification is disabled for git/npm to support corporate proxies
+- The `node` user (UID 1000) is the default; entrypoint remaps if needed
