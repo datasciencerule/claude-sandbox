@@ -1,5 +1,8 @@
 docker-compose.yml
 start-sandbox.sh
 README_sandbox.md
+!runtime/docker-compose.yml
+!runtime/start-sandbox.sh
 .env
 .rlibs/
+.rlibs

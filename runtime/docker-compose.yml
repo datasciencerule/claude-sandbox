@@ -1,0 +1,63 @@
+# Claude Code Sandbox (Lite) Container
+#
+# Usage:
+#   Option 1: Use the convenience script (recommended)
+#     ./start-sandbox.sh
+#
+#   Option 2: Manual commands
+#     docker compose up -d                              # Start container
+#     docker compose exec -u node claude-code zsh      # Enter shell as node user
+#     docker compose down                               # Stop container
+#
+# Note: Container uses dynamic UID/GID mapping via entrypoint script
+# Note: docker compose exec defaults to root, so -u node is required for CLI commands
+
+services:
+  claude-code:
+    image: claude-sandbox-lite:latest
+    working_dir: /workspace
+    stdin_open: true
+    tty: true
+
+    volumes:
+      - ./:/workspace:delegated
+      - bashhistory:/commandhistory
+      - config:/home/node/.claude
+      - ghconfig:/home/node/.config/gh
+      # Mount AWS credentials if using Bedrock (read-only)
+      - ${HOME}/.aws:/home/node/.aws:ro,cached
+
+    environment:
+      NODE_OPTIONS: "--max-old-space-size=4096 --no-warnings"
+      CLAUDE_CONFIG_DIR: "/home/node/.claude"
+      POWERLEVEL9K_DISABLE_GITSTATUS: "true"
+      # API Configuration (set in .env file)
+      # Direct Anthropic API:
+      ANTHROPIC_API_KEY: "${ANTHROPIC_API_KEY:-}"
+      # AWS Bedrock:
+      CLAUDE_CODE_USE_BEDROCK: "${CLAUDE_CODE_USE_BEDROCK:-}"
+      AWS_PROFILE: "${AWS_PROFILE:-default}"
+      AWS_REGION: "${AWS_REGION:-us-east-1}"
+      ANTHROPIC_MODEL: "${ANTHROPIC_MODEL:-}"
+      # Git identity (optional - set in .env file)
+      GIT_AUTHOR_NAME: "${GIT_AUTHOR_NAME:-}"
+      GIT_AUTHOR_EMAIL: "${GIT_AUTHOR_EMAIL:-}"
+      GIT_COMMITTER_NAME: "${GIT_COMMITTER_NAME:-}"
+      GIT_COMMITTER_EMAIL: "${GIT_COMMITTER_EMAIL:-}"
+      # Host UID/GID for dynamic user mapping (set by start-sandbox.sh)
+      HOST_UID: "${HOST_UID:-1000}"
+      HOST_GID: "${HOST_GID:-1000}"
+
+    command: >
+      bash -c "
+        gh auth setup-git 2>/dev/null || true &&
+        exec zsh
+      "
+
+volumes:
+  bashhistory:
+    name: ${COMPOSE_PROJECT_NAME}_bashhistory
+  config:
+    name: ${COMPOSE_PROJECT_NAME}_config
+  ghconfig:
+    name: ${COMPOSE_PROJECT_NAME}_ghconfig
