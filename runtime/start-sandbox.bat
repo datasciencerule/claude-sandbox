@@ -79,6 +79,9 @@ REM Set default UID/GID for Windows
 if not defined HOST_UID set "HOST_UID=1000"
 if not defined HOST_GID set "HOST_GID=1000"
 
+REM Ensure HOME is set (Windows uses USERPROFILE, but docker-compose needs HOME)
+if not defined HOME set "HOME=%USERPROFILE%"
+
 REM Default values
 set "MODE=default"
 set "CLAUDE_VERSION=latest"
