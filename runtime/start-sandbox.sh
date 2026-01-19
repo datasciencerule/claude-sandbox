@@ -22,6 +22,7 @@ GITIGNORE_FILE="$SCRIPT_DIR/.gitignore"
 SANDBOX_FILES=(
     "docker-compose.yml"
     "start-sandbox.sh"
+    "start-sandbox.bat"
     "CLAUDE.md"
     ".env"
 )

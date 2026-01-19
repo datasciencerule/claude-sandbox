@@ -75,11 +75,16 @@ echo   Image: %IMAGE_NAME%:%IMAGE_TAG%
 echo   Claude Code version: %CLAUDE_VERSION%
 echo.
 
+REM Get timezone (default to UTC if not available)
+set "TZ=UTC"
+for /f "tokens=*" %%T in ('powershell -Command "[System.TimeZoneInfo]::Local.Id" 2^>nul') do set "TZ=%%T"
+
 REM Build the Docker image
 docker build ^
     %BUILD_ARGS% ^
     %PROXY_ARGS% ^
     --build-arg CLAUDE_CODE_VERSION=%CLAUDE_VERSION% ^
+    --build-arg TZ=%TZ% ^
     -t %IMAGE_NAME%:%IMAGE_TAG% ^
     .
 

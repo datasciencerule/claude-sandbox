@@ -62,24 +62,28 @@ uv pip install package-name
 
 ### API Configuration
 
-This sandbox supports three API modes (configured via `.env` file in the project):
+This sandbox supports multiple API modes (configured via `.env` file in the project):
 
-#### Direct Anthropic API
+#### Option 1: Direct Anthropic API
 ```bash
-ANTHROPIC_AUTH_TOKEN=sk-ai-v1-...
-ANTHROPIC_BASE_URL=https://api.anthropic.com
-ANTHROPIC_MODEL=claude-3-5-sonnet-20241022
+ANTHROPIC_API_KEY=sk-ant-api03-...
 ```
 
-#### AWS Bedrock
+#### Option 2: AWS Bedrock with Profile
 ```bash
 CLAUDE_CODE_USE_BEDROCK=1
 AWS_PROFILE=your-profile
 AWS_REGION=us-east-1
-ANTHROPIC_MODEL=global.anthropic.claude-opus-4-5-20251101-v1:0
 ```
 
-#### LLM Gateway / Proxy
+#### Option 3: AWS Bedrock with Bearer Token
+```bash
+CLAUDE_CODE_USE_BEDROCK=1
+AWS_BEARER_TOKEN_BEDROCK=ABSK...
+AWS_REGION=us-east-1
+```
+
+#### Option 4: LLM Gateway / Proxy
 ```bash
 ANTHROPIC_AUTH_TOKEN=sk-ai-v1-...
 ANTHROPIC_BASE_URL=https://your-gateway.example.com

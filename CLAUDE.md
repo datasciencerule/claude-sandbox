@@ -2,20 +2,21 @@
 
 ## About This Repository
 
-This repository provides a lightweight Docker-based sandbox for running Claude Code. It builds a ~1.5GB image that supports both direct Anthropic API and AWS Bedrock.
+This repository provides a lightweight Docker-based sandbox for running Claude Code. It builds a ~1.5GB image that supports direct Anthropic API, AWS Bedrock, and LLM Gateway/Proxy.
 
 ## Repository Structure
 
 ```
 ├── build/                  # Docker image build files
 │   ├── Dockerfile          # Image definition
-│   ├── build.sh           # Build script
+│   ├── build.sh           # Build script (Linux/macOS)
+│   ├── build.bat          # Build script (Windows)
 │   ├── entrypoint.sh      # Container entrypoint (UID/GID mapping)
 │   ├── python-packages.txt # Python dependencies
 │   └── README.md          # Build documentation
 ├── runtime/               # Files to copy to user projects
 │   ├── .env.example       # Environment template (copy to .env)
-│   ├── Claude.md          # Claude Code instructions (copy to CLAUDE.md)
+│   ├── CLAUDE.md          # Claude Code instructions
 │   ├── docker-compose.yml # Container configuration
 │   ├── start-sandbox.sh   # Linux/macOS start script
 │   └── start-sandbox.bat  # Windows start script
@@ -93,7 +94,7 @@ The start scripts automatically add sandbox files to `.gitignore`.
 
 ## API Configuration
 
-The sandbox supports three authentication modes (configured via `.env` in user projects):
+The sandbox supports four authentication modes (configured via `.env` in user projects):
 
 ### Option 1: Direct Anthropic API
 ```bash
@@ -112,6 +113,13 @@ AWS_REGION=us-east-1
 CLAUDE_CODE_USE_BEDROCK=1
 AWS_BEARER_TOKEN_BEDROCK=ABSK...
 AWS_REGION=us-east-1
+```
+
+### Option 4: LLM Gateway / Proxy
+```bash
+ANTHROPIC_AUTH_TOKEN=sk-ai-v1-...
+ANTHROPIC_BASE_URL=https://your-gateway.example.com
+ANTHROPIC_MODEL=claude-3-5-sonnet-20241022
 ```
 
 ## Development Notes

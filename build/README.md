@@ -1,11 +1,15 @@
 # Claude Code Sandbox - Build
 
-A lightweight (~1.5GB) Docker image for running Claude Code with either direct Anthropic API or AWS Bedrock.
+A lightweight (~1.5GB) Docker image for running Claude Code with direct Anthropic API, AWS Bedrock, or LLM Gateway/Proxy.
 
 ## Quick Start
 
 ```bash
+# Linux/macOS
 ./build.sh
+
+# Windows
+build.bat
 ```
 
 ## What's Included
@@ -27,6 +31,7 @@ A lightweight (~1.5GB) Docker image for running Claude Code with either direct A
 - **uv** - fast Python package manager
 - **jq** - JSON processing
 - **curl**, **wget** - HTTP clients
+- **poppler-utils** - PDF utilities
 - **vim**, **nano** - text editors
 - **zsh** with **fzf** - modern shell with fuzzy finder
 
@@ -72,16 +77,30 @@ cd /path/to/your/project
 
 Configure in your project's `.env` file:
 
-### Direct Anthropic API
+### Option 1: Direct Anthropic API
 ```bash
 ANTHROPIC_API_KEY=sk-ant-api03-...
 ```
 
-### AWS Bedrock
+### Option 2: AWS Bedrock with Profile
 ```bash
 CLAUDE_CODE_USE_BEDROCK=1
 AWS_PROFILE=your-profile
 AWS_REGION=us-east-1
+```
+
+### Option 3: AWS Bedrock with Bearer Token
+```bash
+CLAUDE_CODE_USE_BEDROCK=1
+AWS_BEARER_TOKEN_BEDROCK=ABSK...
+AWS_REGION=us-east-1
+```
+
+### Option 4: LLM Gateway / Proxy
+```bash
+ANTHROPIC_AUTH_TOKEN=sk-ai-v1-...
+ANTHROPIC_BASE_URL=https://your-gateway.example.com
+ANTHROPIC_MODEL=claude-3-5-sonnet-20241022
 ```
 
 ## What's NOT Included (vs Full Image)
@@ -91,5 +110,3 @@ AWS_REGION=us-east-1
 - Tesseract OCR, GDAL/GEOS/PROJ
 - Corporate proxy/firewall configuration
 - Heavy scientific computing libraries (scikit-learn, opencv, etc.)
-
-For the full-featured image with R, document processing, and corporate proxy support, use the `build/` directory instead.
