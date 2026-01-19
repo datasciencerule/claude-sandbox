@@ -1,5 +1,3 @@
-# CLAUDE.md
-
 ## Sandbox Environment
 
 You are running inside a lightweight Docker sandbox (`ccsandbox-node-py`). Your workspace (`/workspace`) is mounted from the host project directory.
@@ -41,7 +39,7 @@ uv pip install package-name
 
 ### CLI Tools
 
-- **AWS CLI v2** - Cloud operations (for Bedrock)
+- **AWS CLI v2** - Cloud operations
 - **GitHub CLI (`gh`)** - GitHub operations (use `gh auth login` to authenticate)
 - **git** with **delta** - Version control with syntax-highlighted diffs
 - **uv** - Fast Python package manager
@@ -59,44 +57,6 @@ uv pip install package-name
 | `/workspace` | Project directory (mounted from host) |
 | `/workspace/.venv` | Python virtual environment (create with `uv venv`) |
 | `/home/node/.claude` | Claude Code settings (persisted in Docker volume) |
-
-### API Configuration
-
-This sandbox supports multiple API modes (configured via `.env` file in the project):
-
-#### Option 1: Direct Anthropic API
-```bash
-ANTHROPIC_API_KEY=sk-ant-api03-...
-```
-
-#### Option 2: AWS Bedrock with Profile
-```bash
-CLAUDE_CODE_USE_BEDROCK=1
-AWS_PROFILE=your-profile
-AWS_REGION=us-east-1
-```
-
-#### Option 3: AWS Bedrock with Bearer Token
-```bash
-CLAUDE_CODE_USE_BEDROCK=1
-AWS_BEARER_TOKEN_BEDROCK=ABSK...
-AWS_REGION=us-east-1
-```
-
-#### Option 4: LLM Gateway / Proxy
-```bash
-ANTHROPIC_AUTH_TOKEN=sk-ai-v1-...
-ANTHROPIC_BASE_URL=https://your-gateway.example.com
-ANTHROPIC_MODEL=claude-3-5-sonnet-20241022
-```
-
-#### Additional Model Configuration
-You can also set default models for different Claude tiers:
-```bash
-ANTHROPIC_DEFAULT_HAIKU_MODEL=claude-3-5-haiku-20241022
-ANTHROPIC_DEFAULT_OPUS_MODEL=claude-3-5-opus-20241022
-ANTHROPIC_DEFAULT_SONNET_MODEL=claude-3-5-sonnet-20241022
-```
 
 ### Common Tasks
 
@@ -130,5 +90,4 @@ node script.js
 - Shell: `zsh` with fzf integration
 - Default editor: `nano` (vim also available)
 - Project files persist on host; Claude settings persist in Docker volumes
-- SSL verification disabled for git/npm (for corporate proxy compatibility)
 - Container runs as `node` user with UID/GID mapped to host user

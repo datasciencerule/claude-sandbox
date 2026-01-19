@@ -16,10 +16,12 @@ This repository provides a lightweight Docker-based sandbox for running Claude C
 │   └── README.md          # Build documentation
 ├── runtime/               # Files to copy to user projects
 │   ├── .env.example       # Environment template (copy to .env)
-│   ├── CLAUDE.md          # Claude Code instructions
+│   ├── CLAUDE.sandbox.md  # Sandbox instructions template (merged into project CLAUDE.md)
 │   ├── docker-compose.yml # Container configuration
-│   ├── start-sandbox.sh   # Linux/macOS start script
-│   └── start-sandbox.bat  # Windows start script
+│   ├── setup-sandbox.sh   # One-time project setup (Linux/macOS)
+│   ├── setup-sandbox.bat  # One-time project setup (Windows)
+│   ├── start-sandbox.sh   # Container lifecycle (Linux/macOS)
+│   └── start-sandbox.bat  # Container lifecycle (Windows)
 └── CLAUDE.md              # This file (repo instructions)
 ```
 
@@ -81,16 +83,53 @@ Handles dynamic UID/GID mapping at runtime. Allows the container to run with the
 ### build/python-packages.txt
 Lists Python packages to pre-install. Modify this to add/remove packages from the image.
 
-### runtime/Claude.md
-Template CLAUDE.md for projects using this sandbox. Copy to user projects along with start scripts.
+### runtime/CLAUDE.sandbox.md
+Template containing sandbox environment instructions. The setup script merges this into your project's CLAUDE.md using markers (`<!-- BEGIN/END SANDBOX ENVIRONMENT -->`), allowing idempotent updates.
+
+### runtime/setup-sandbox.sh / setup-sandbox.bat
+One-time project initialization scripts. They:
+1. Copy docker-compose.yml to the project
+2. Copy .env.example to .env (if .env doesn't exist)
+3. Copy start-sandbox.sh and start-sandbox.bat
+4. Update .gitignore with sandbox files
+5. Merge sandbox instructions into the project's CLAUDE.md
+
+### runtime/start-sandbox.sh / start-sandbox.bat
+Container lifecycle scripts. They only handle starting and stopping the container - no file creation or modification.
 
 ## Using the Sandbox in Projects
 
-1. Copy all files from `runtime/` to your project directory
-2. Copy `.env.example` to `.env` and configure your API credentials
-3. Run `./start-sandbox.sh` (Linux/macOS) or `start-sandbox.bat` (Windows)
+1. Copy or unzip the `runtime/` folder into your project directory
+2. Run the setup script from within the runtime folder:
+   ```bash
+   # Linux/macOS
+   cd your-project/runtime
+   ./setup-sandbox.sh           # Defaults to parent directory
 
-The start scripts automatically add sandbox files to `.gitignore`.
+   # Windows
+   cd your-project\runtime
+   setup-sandbox.bat            # Defaults to parent directory
+   ```
+3. Edit `.env` in your project to configure API credentials
+4. Start the sandbox:
+   ```bash
+   # Linux/macOS
+   ./start-sandbox.sh
+
+   # Windows
+   start-sandbox.bat
+   ```
+5. (Optional) Delete the `runtime/` folder after setup
+
+### Setup Script Options
+
+```bash
+./setup-sandbox.sh [TARGET_DIR]    # Full setup (default: parent directory)
+./setup-sandbox.sh .               # Setup in current directory
+./setup-sandbox.sh --check         # Verify setup is complete
+./setup-sandbox.sh --update        # Update CLAUDE.md section only
+./setup-sandbox.sh --uninstall     # Remove sandbox files
+```
 
 ## API Configuration
 
@@ -126,5 +165,4 @@ ANTHROPIC_MODEL=claude-3-5-sonnet-20241022
 
 - Image builds in ~5-10 minutes depending on cache
 - Target size is ~1.5GB (vs ~6.8GB for full-featured images)
-- SSL verification is disabled for git/npm to support corporate proxies
 - The `node` user (UID 1000) is the default; entrypoint remaps if needed

@@ -5,6 +5,8 @@
 #   ./start-sandbox.sh                  # Run claude --dangerously-skip-permissions (default)
 #   ./start-sandbox.sh -p|--permissions # Run claude (with normal permissions)
 #   ./start-sandbox.sh -s|--shell       # Run zsh shell
+#   ./start-sandbox.sh -c|--continue    # Continue most recent conversation
+#   ./start-sandbox.sh -r|--resume [ID] # Resume by session ID or open picker
 #
 # This script:
 #   1. Starts the container with docker compose up -d
@@ -16,28 +18,6 @@ set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
-
-# Ensure sandbox files are in .gitignore
-GITIGNORE_FILE="$SCRIPT_DIR/.gitignore"
-SANDBOX_FILES=(
-    "docker-compose.yml"
-    "start-sandbox.sh"
-    "start-sandbox.bat"
-    "CLAUDE.md"
-    ".env"
-)
-
-# Create .gitignore if it doesn't exist
-if [[ ! -f "$GITIGNORE_FILE" ]]; then
-    touch "$GITIGNORE_FILE"
-fi
-
-# Add each sandbox file to .gitignore if not already present
-for file in "${SANDBOX_FILES[@]}"; do
-    if ! grep -qxF "$file" "$GITIGNORE_FILE" 2>/dev/null; then
-        echo "$file" >> "$GITIGNORE_FILE"
-    fi
-done
 
 # Generate a unique project name based on user and directory
 PROJECT_NAME="$(basename "$SCRIPT_DIR")"
@@ -68,12 +48,6 @@ if [[ -n "$CLAUDE_CODE_USE_BEDROCK" ]]; then
     export ANTHROPIC_API_KEY=""
 fi
 
-# Export git identity if set
-export GIT_AUTHOR_NAME
-export GIT_AUTHOR_EMAIL
-export GIT_COMMITTER_NAME="${GIT_COMMITTER_NAME:-$GIT_AUTHOR_NAME}"
-export GIT_COMMITTER_EMAIL="${GIT_COMMITTER_EMAIL:-$GIT_AUTHOR_EMAIL}"
-
 # Export API configuration for Gateway/Proxy
 export ANTHROPIC_AUTH_TOKEN
 export ANTHROPIC_BASE_URL
@@ -96,6 +70,8 @@ export HOST_GID=$(id -g)
 # Parse command line arguments
 MODE="default"
 CLAUDE_VERSION="latest"
+SESSION_OPT=""
+SESSION_ID=""
 while [[ $# -gt 0 ]]; do
     case $1 in
         -p|--permissions)
@@ -110,6 +86,19 @@ while [[ $# -gt 0 ]]; do
             CLAUDE_VERSION="$2"
             shift 2
             ;;
+        -c|--continue)
+            SESSION_OPT="--continue"
+            shift
+            ;;
+        -r|--resume)
+            SESSION_OPT="--resume"
+            # Check if next arg is a session ID (not another flag)
+            if [[ -n "${2:-}" && ! "$2" =~ ^- ]]; then
+                SESSION_ID="$2"
+                shift
+            fi
+            shift
+            ;;
         -h|--help)
             echo "Usage: $0 [OPTIONS]"
             echo ""
@@ -117,6 +106,8 @@ while [[ $# -gt 0 ]]; do
             echo "  (none)            Run claude --dangerously-skip-permissions (default)"
             echo "  -p, --permissions Run claude with normal permissions"
             echo "  -s, --shell       Run zsh shell"
+            echo "  -c, --continue    Continue the most recent conversation"
+            echo "  -r, --resume [ID] Resume by session ID or open picker"
             echo "  -v, --version VER Install specific Claude Code version (default: latest)"
             echo "  -h, --help        Show this help message"
             exit 0
@@ -132,11 +123,11 @@ done
 # Set command based on mode
 case $MODE in
     default)
-        CMD="claude --dangerously-skip-permissions"
+        CMD="claude --dangerously-skip-permissions $SESSION_OPT $SESSION_ID"
         DESC="Claude Code (skip permissions)"
         ;;
     permissions)
-        CMD="claude"
+        CMD="claude $SESSION_OPT $SESSION_ID"
         DESC="Claude Code (with permissions)"
         ;;
     shell)

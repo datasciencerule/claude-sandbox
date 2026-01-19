@@ -5,6 +5,8 @@ REM Usage:
 REM   start-sandbox.bat                      # Run claude --dangerously-skip-permissions (default)
 REM   start-sandbox.bat -p or --permissions  # Run claude (with normal permissions)
 REM   start-sandbox.bat -s or --shell        # Run zsh shell
+REM   start-sandbox.bat -c or --continue     # Continue most recent conversation
+REM   start-sandbox.bat -r or --resume [ID]  # Resume by session ID or open picker
 REM   start-sandbox.bat -v or --version VER  # Install specific Claude Code version
 REM
 REM This script:
@@ -18,20 +20,6 @@ setlocal enabledelayedexpansion
 REM Change to script directory
 cd /d "%~dp0"
 set "SCRIPT_DIR=%~dp0"
-
-REM Ensure sandbox files are in .gitignore
-set "GITIGNORE_FILE=%SCRIPT_DIR%.gitignore"
-
-REM Create .gitignore if it doesn't exist
-if not exist "%GITIGNORE_FILE%" type nul > "%GITIGNORE_FILE%"
-
-REM Add sandbox files to .gitignore if not already present
-for %%F in (docker-compose.yml start-sandbox.sh start-sandbox.bat CLAUDE.md .env) do (
-    findstr /x /c:"%%F" "%GITIGNORE_FILE%" >nul 2>&1
-    if errorlevel 1 (
-        echo %%F>> "%GITIGNORE_FILE%"
-    )
-)
 
 REM Generate a unique project name based on user and directory
 for %%I in ("%SCRIPT_DIR:~0,-1%") do set "PROJECT_NAME=%%~nxI"
@@ -72,10 +60,6 @@ if defined CLAUDE_CODE_USE_BEDROCK (
     set "ANTHROPIC_API_KEY="
 )
 
-REM Set git committer defaults if not set
-if not defined GIT_COMMITTER_NAME if defined GIT_AUTHOR_NAME set "GIT_COMMITTER_NAME=%GIT_AUTHOR_NAME%"
-if not defined GIT_COMMITTER_EMAIL if defined GIT_AUTHOR_EMAIL set "GIT_COMMITTER_EMAIL=%GIT_AUTHOR_EMAIL%"
-
 REM Export API configuration for Gateway/Proxy
 if defined ANTHROPIC_AUTH_TOKEN set "ANTHROPIC_AUTH_TOKEN=%ANTHROPIC_AUTH_TOKEN%"
 if defined ANTHROPIC_BASE_URL set "ANTHROPIC_BASE_URL=%ANTHROPIC_BASE_URL%"
@@ -98,6 +82,8 @@ if not defined HOST_GID set "HOST_GID=1000"
 REM Default values
 set "MODE=default"
 set "CLAUDE_VERSION=latest"
+set "SESSION_OPT="
+set "SESSION_ID="
 
 REM Parse command line arguments
 :parse_args
@@ -135,6 +121,42 @@ if "%~1"=="--version" (
     shift
     goto parse_args
 )
+if "%~1"=="-c" (
+    set "SESSION_OPT=--continue"
+    shift
+    goto parse_args
+)
+if "%~1"=="--continue" (
+    set "SESSION_OPT=--continue"
+    shift
+    goto parse_args
+)
+if "%~1"=="-r" (
+    set "SESSION_OPT=--resume"
+    REM Check if next arg is a session ID (not another flag)
+    if not "%~2"=="" (
+        set "NEXT_ARG=%~2"
+        if not "!NEXT_ARG:~0,1!"=="-" (
+            set "SESSION_ID=%~2"
+            shift
+        )
+    )
+    shift
+    goto parse_args
+)
+if "%~1"=="--resume" (
+    set "SESSION_OPT=--resume"
+    REM Check if next arg is a session ID (not another flag)
+    if not "%~2"=="" (
+        set "NEXT_ARG=%~2"
+        if not "!NEXT_ARG:~0,1!"=="-" (
+            set "SESSION_ID=%~2"
+            shift
+        )
+    )
+    shift
+    goto parse_args
+)
 if "%~1"=="-h" goto show_help
 if "%~1"=="--help" goto show_help
 
@@ -149,6 +171,8 @@ echo Options:
 echo   (none)            Run claude --dangerously-skip-permissions (default)
 echo   -p, --permissions Run claude with normal permissions
 echo   -s, --shell       Run zsh shell
+echo   -c, --continue    Continue the most recent conversation
+echo   -r, --resume [ID] Resume by session ID or open picker
 echo   -v, --version VER Install specific Claude Code version (default: latest)
 echo   -h, --help        Show this help message
 exit /b 0
@@ -157,11 +181,11 @@ exit /b 0
 
 REM Set command based on mode
 if "%MODE%"=="default" (
-    set "CMD=claude --dangerously-skip-permissions"
+    set "CMD=claude --dangerously-skip-permissions %SESSION_OPT% %SESSION_ID%"
     set "DESC=Claude Code (skip permissions)"
 )
 if "%MODE%"=="permissions" (
-    set "CMD=claude"
+    set "CMD=claude %SESSION_OPT% %SESSION_ID%"
     set "DESC=Claude Code (with permissions)"
 )
 if "%MODE%"=="shell" (

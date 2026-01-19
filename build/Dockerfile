@@ -107,10 +107,6 @@ RUN ARCH=$(dpkg --print-architecture) && \
 # Set up non-root user
 USER node
 
-# Configure git and npm for SSL bypass (if behind corporate proxy)
-RUN git config --global http.sslVerify false && \
-    npm config set strict-ssl false
-
 # Install global npm packages location
 ENV NPM_CONFIG_PREFIX=/usr/local/share/npm-global
 ENV PATH=$PATH:/usr/local/share/npm-global/bin
