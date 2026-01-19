@@ -27,28 +27,15 @@ services:
       # Mount AWS credentials if using Bedrock (read-only)
       - ${HOME}/.aws:/home/node/.aws:ro,cached
 
+    # Load API configuration from .env file ONLY (prevents host env leakage)
+    env_file:
+      - .env
+
     environment:
+      # Container settings (not from .env)
       NODE_OPTIONS: "--max-old-space-size=4096 --no-warnings"
       CLAUDE_CONFIG_DIR: "/home/node/.claude"
       POWERLEVEL9K_DISABLE_GITSTATUS: "true"
-      # API Configuration (set in .env file)
-      # Direct Anthropic API:
-      ANTHROPIC_API_KEY: "${ANTHROPIC_API_KEY:-}"
-      # AWS Bedrock:
-      CLAUDE_CODE_USE_BEDROCK: "${CLAUDE_CODE_USE_BEDROCK:-}"
-      AWS_PROFILE: "${AWS_PROFILE:-default}"
-      AWS_REGION: "${AWS_REGION:-us-east-1}"
-      # AWS Bedrock Bearer Token Authentication:
-      AWS_BEARER_TOKEN_BEDROCK: "${AWS_BEARER_TOKEN_BEDROCK:-}"
-      # Optional: For LLM gateway integrations
-      ANTHROPIC_BEDROCK_BASE_URL: "${ANTHROPIC_BEDROCK_BASE_URL:-}"
-      CLAUDE_CODE_SKIP_BEDROCK_AUTH: "${CLAUDE_CODE_SKIP_BEDROCK_AUTH:-}"
-      ANTHROPIC_MODEL: "${ANTHROPIC_MODEL:-}"
-      # Git identity (optional - set in .env file)
-      GIT_AUTHOR_NAME: "${GIT_AUTHOR_NAME:-}"
-      GIT_AUTHOR_EMAIL: "${GIT_AUTHOR_EMAIL:-}"
-      GIT_COMMITTER_NAME: "${GIT_COMMITTER_NAME:-}"
-      GIT_COMMITTER_EMAIL: "${GIT_COMMITTER_EMAIL:-}"
       # Host UID/GID for dynamic user mapping (set by start-sandbox.sh)
       HOST_UID: "${HOST_UID:-1000}"
       HOST_GID: "${HOST_GID:-1000}"

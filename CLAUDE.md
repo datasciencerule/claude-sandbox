@@ -14,7 +14,11 @@ This repository provides a lightweight Docker-based sandbox for running Claude C
 │   ├── python-packages.txt # Python dependencies
 │   └── README.md          # Build documentation
 ├── runtime/               # Files to copy to user projects
-│   └── Claude.md          # Claude Code instructions for runtime
+│   ├── .env.example       # Environment template (copy to .env)
+│   ├── Claude.md          # Claude Code instructions (copy to CLAUDE.md)
+│   ├── docker-compose.yml # Container configuration
+│   ├── start-sandbox.sh   # Linux/macOS start script
+│   └── start-sandbox.bat  # Windows start script
 └── CLAUDE.md              # This file (repo instructions)
 ```
 
@@ -79,19 +83,34 @@ Lists Python packages to pre-install. Modify this to add/remove packages from th
 ### runtime/Claude.md
 Template CLAUDE.md for projects using this sandbox. Copy to user projects along with start scripts.
 
+## Using the Sandbox in Projects
+
+1. Copy all files from `runtime/` to your project directory
+2. Copy `.env.example` to `.env` and configure your API credentials
+3. Run `./start-sandbox.sh` (Linux/macOS) or `start-sandbox.bat` (Windows)
+
+The start scripts automatically add sandbox files to `.gitignore`.
+
 ## API Configuration
 
-The sandbox supports two modes (configured via `.env` in user projects):
+The sandbox supports three authentication modes (configured via `.env` in user projects):
 
-### Direct Anthropic API
+### Option 1: Direct Anthropic API
 ```bash
 ANTHROPIC_API_KEY=sk-ant-api03-...
 ```
 
-### AWS Bedrock
+### Option 2: AWS Bedrock with Profile
 ```bash
 CLAUDE_CODE_USE_BEDROCK=1
 AWS_PROFILE=your-profile
+AWS_REGION=us-east-1
+```
+
+### Option 3: AWS Bedrock with Bearer Token
+```bash
+CLAUDE_CODE_USE_BEDROCK=1
+AWS_BEARER_TOKEN_BEDROCK=ABSK...
 AWS_REGION=us-east-1
 ```
 

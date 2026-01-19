@@ -52,24 +52,19 @@ if [[ -f "$SCRIPT_DIR/.env" ]]; then
 fi
 
 # Check API configuration
-if [[ -z "$ANTHROPIC_API_KEY" && -z "$CLAUDE_CODE_USE_BEDROCK" ]]; then
-    echo "WARNING: No API configuration detected."
+if [[ -z "$ANTHROPIC_API_KEY" && -z "$ANTHROPIC_AUTH_TOKEN" && -z "$CLAUDE_CODE_USE_BEDROCK" ]]; then
+    echo "WARNING: No API configuration in .env file."
+    echo "  1) ANTHROPIC_API_KEY=sk-ant-...      (Direct API)"
+    echo "  2) ANTHROPIC_AUTH_TOKEN=...         (Gateway/Proxy)"
+    echo "  3) CLAUDE_CODE_USE_BEDROCK=1        (AWS Bedrock)"
     echo ""
-    echo "Configure one of the following in .env file:"
-    echo ""
-    echo "  Option 1 - Direct Anthropic API:"
-    echo "    ANTHROPIC_API_KEY=sk-ant-api03-..."
-    echo ""
-    echo "  Option 2 - AWS Bedrock (Profile-based):"
-    echo "    CLAUDE_CODE_USE_BEDROCK=1"
-    echo "    AWS_PROFILE=your-profile"
-    echo "    AWS_REGION=us-east-1"
-    echo ""
-    echo "  Option 3 - AWS Bedrock (Bearer Token):"
-    echo "    CLAUDE_CODE_USE_BEDROCK=1"
-    echo "    AWS_BEARER_TOKEN_BEDROCK=your-api-key"
-    echo "    AWS_REGION=us-east-1"
-    echo ""
+fi
+
+# When using Bedrock, clear ANTHROPIC_API_KEY to prevent conflicts
+# (host environment may have this set from another Claude session)
+if [[ -n "$CLAUDE_CODE_USE_BEDROCK" ]]; then
+    unset ANTHROPIC_API_KEY
+    export ANTHROPIC_API_KEY=""
 fi
 
 # Export git identity if set
@@ -77,6 +72,21 @@ export GIT_AUTHOR_NAME
 export GIT_AUTHOR_EMAIL
 export GIT_COMMITTER_NAME="${GIT_COMMITTER_NAME:-$GIT_AUTHOR_NAME}"
 export GIT_COMMITTER_EMAIL="${GIT_COMMITTER_EMAIL:-$GIT_AUTHOR_EMAIL}"
+
+# Export API configuration for Gateway/Proxy
+export ANTHROPIC_AUTH_TOKEN
+export ANTHROPIC_BASE_URL
+export ANTHROPIC_MODEL
+
+# Export model defaults if set
+export ANTHROPIC_DEFAULT_HAIKU_MODEL
+export ANTHROPIC_DEFAULT_OPUS_MODEL
+export ANTHROPIC_DEFAULT_SONNET_MODEL
+
+# Export runtime configuration if set
+export CLAUDE_CODE_ENTRYPOINT
+export CLAUDE_CODE_SSE_PORT
+export CLAUDE_CODE_GIT_BASH_PATH
 
 # Export host UID/GID for dynamic user mapping in container
 export HOST_UID=$(id -u)
@@ -150,7 +160,7 @@ fi
 # Install Claude Code CLI (specified version or latest)
 # Note: npm install runs as root for write access to global npm directory
 echo "Installing Claude Code CLI version: $CLAUDE_VERSION..."
-docker compose exec claude-code npm install -g @anthropic-ai/claude-code@"$CLAUDE_VERSION"
+docker compose exec claude-code npm install -g --loglevel=error --no-fund --no-update-notifier @anthropic-ai/claude-code@"$CLAUDE_VERSION"
 echo "Installation complete."
 
 echo "Container ready. Starting $DESC as node user..."

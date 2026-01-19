@@ -53,31 +53,43 @@ if exist "%SCRIPT_DIR%.env" (
 )
 
 REM Check API configuration
-if not defined ANTHROPIC_API_KEY (
-    if not defined CLAUDE_CODE_USE_BEDROCK (
-        echo WARNING: No API configuration detected.
-        echo.
-        echo Configure one of the following in .env file:
-        echo.
-        echo   Option 1 - Direct Anthropic API:
-        echo     ANTHROPIC_API_KEY=sk-ant-api03-...
-        echo.
-        echo   Option 2 - AWS Bedrock Profile-based:
-        echo     CLAUDE_CODE_USE_BEDROCK=1
-        echo     AWS_PROFILE=your-profile
-        echo     AWS_REGION=us-east-1
-        echo.
-        echo   Option 3 - AWS Bedrock Bearer Token:
-        echo     CLAUDE_CODE_USE_BEDROCK=1
-        echo     AWS_BEARER_TOKEN_BEDROCK=your-api-key
-        echo     AWS_REGION=us-east-1
-        echo.
-    )
+set "API_CONFIGURED="
+if defined ANTHROPIC_API_KEY set "API_CONFIGURED=1"
+if defined ANTHROPIC_AUTH_TOKEN set "API_CONFIGURED=1"
+if defined CLAUDE_CODE_USE_BEDROCK set "API_CONFIGURED=1"
+
+if not defined API_CONFIGURED (
+    echo WARNING: No API configuration in .env file.
+    echo   1^) ANTHROPIC_API_KEY=sk-ant-...      ^(Direct API^)
+    echo   2^) ANTHROPIC_AUTH_TOKEN=...         ^(Gateway/Proxy^)
+    echo   3^) CLAUDE_CODE_USE_BEDROCK=1        ^(AWS Bedrock^)
+    echo.
+)
+
+REM When using Bedrock, clear ANTHROPIC_API_KEY to prevent conflicts
+REM (host environment may have this set from another Claude session)
+if defined CLAUDE_CODE_USE_BEDROCK (
+    set "ANTHROPIC_API_KEY="
 )
 
 REM Set git committer defaults if not set
 if not defined GIT_COMMITTER_NAME if defined GIT_AUTHOR_NAME set "GIT_COMMITTER_NAME=%GIT_AUTHOR_NAME%"
 if not defined GIT_COMMITTER_EMAIL if defined GIT_AUTHOR_EMAIL set "GIT_COMMITTER_EMAIL=%GIT_AUTHOR_EMAIL%"
+
+REM Export API configuration for Gateway/Proxy
+if defined ANTHROPIC_AUTH_TOKEN set "ANTHROPIC_AUTH_TOKEN=%ANTHROPIC_AUTH_TOKEN%"
+if defined ANTHROPIC_BASE_URL set "ANTHROPIC_BASE_URL=%ANTHROPIC_BASE_URL%"
+if defined ANTHROPIC_MODEL set "ANTHROPIC_MODEL=%ANTHROPIC_MODEL%"
+
+REM Export model defaults if set
+if defined ANTHROPIC_DEFAULT_HAIKU_MODEL set "ANTHROPIC_DEFAULT_HAIKU_MODEL=%ANTHROPIC_DEFAULT_HAIKU_MODEL%"
+if defined ANTHROPIC_DEFAULT_OPUS_MODEL set "ANTHROPIC_DEFAULT_OPUS_MODEL=%ANTHROPIC_DEFAULT_OPUS_MODEL%"
+if defined ANTHROPIC_DEFAULT_SONNET_MODEL set "ANTHROPIC_DEFAULT_SONNET_MODEL=%ANTHROPIC_DEFAULT_SONNET_MODEL%"
+
+REM Export runtime configuration if set
+if defined CLAUDE_CODE_ENTRYPOINT set "CLAUDE_CODE_ENTRYPOINT=%CLAUDE_CODE_ENTRYPOINT%"
+if defined CLAUDE_CODE_SSE_PORT set "CLAUDE_CODE_SSE_PORT=%CLAUDE_CODE_SSE_PORT%"
+if defined CLAUDE_CODE_GIT_BASH_PATH set "CLAUDE_CODE_GIT_BASH_PATH=%CLAUDE_CODE_GIT_BASH_PATH%"
 
 REM Set default UID/GID for Windows
 if not defined HOST_UID set "HOST_UID=1000"
@@ -173,7 +185,7 @@ if errorlevel 1 (
 
 REM Install Claude Code CLI
 echo Installing Claude Code CLI version: %CLAUDE_VERSION%...
-docker compose exec claude-code npm install -g @anthropic-ai/claude-code@%CLAUDE_VERSION%
+docker compose exec claude-code npm install -g --loglevel=error --no-fund --no-update-notifier @anthropic-ai/claude-code@%CLAUDE_VERSION%
 echo Installation complete.
 
 echo Container ready. Starting %DESC% as node user...
