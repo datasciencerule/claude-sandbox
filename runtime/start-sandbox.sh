@@ -60,9 +60,14 @@ if [[ -z "$ANTHROPIC_API_KEY" && -z "$CLAUDE_CODE_USE_BEDROCK" ]]; then
     echo "  Option 1 - Direct Anthropic API:"
     echo "    ANTHROPIC_API_KEY=sk-ant-api03-..."
     echo ""
-    echo "  Option 2 - AWS Bedrock:"
+    echo "  Option 2 - AWS Bedrock (Profile-based):"
     echo "    CLAUDE_CODE_USE_BEDROCK=1"
     echo "    AWS_PROFILE=your-profile"
+    echo "    AWS_REGION=us-east-1"
+    echo ""
+    echo "  Option 3 - AWS Bedrock (Bearer Token):"
+    echo "    CLAUDE_CODE_USE_BEDROCK=1"
+    echo "    AWS_BEARER_TOKEN_BEDROCK=your-api-key"
     echo "    AWS_REGION=us-east-1"
     echo ""
 fi
@@ -157,6 +162,6 @@ docker compose exec -u node claude-code $CMD || true
 
 echo "----------------------------------------"
 echo "Stopping container..."
-docker compose down
+docker compose down -t 2
 
 echo "Done."

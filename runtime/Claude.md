@@ -2,7 +2,7 @@
 
 ## Sandbox Environment
 
-You are running inside a lightweight Docker sandbox (`claude-sandbox-lite`). Your workspace (`/workspace`) is mounted from the host project directory.
+You are running inside a lightweight Docker sandbox (`ccsandbox-node-py`). Your workspace (`/workspace`) is mounted from the host project directory.
 
 ### Available Languages & Runtimes
 

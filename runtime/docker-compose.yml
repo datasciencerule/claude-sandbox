@@ -14,7 +14,7 @@
 
 services:
   claude-code:
-    image: claude-sandbox-lite:latest
+    image: ccsandbox-node-py:latest
     working_dir: /workspace
     stdin_open: true
     tty: true
@@ -38,6 +38,11 @@ services:
       CLAUDE_CODE_USE_BEDROCK: "${CLAUDE_CODE_USE_BEDROCK:-}"
       AWS_PROFILE: "${AWS_PROFILE:-default}"
       AWS_REGION: "${AWS_REGION:-us-east-1}"
+      # AWS Bedrock Bearer Token Authentication:
+      AWS_BEARER_TOKEN_BEDROCK: "${AWS_BEARER_TOKEN_BEDROCK:-}"
+      # Optional: For LLM gateway integrations
+      ANTHROPIC_BEDROCK_BASE_URL: "${ANTHROPIC_BEDROCK_BASE_URL:-}"
+      CLAUDE_CODE_SKIP_BEDROCK_AUTH: "${CLAUDE_CODE_SKIP_BEDROCK_AUTH:-}"
       ANTHROPIC_MODEL: "${ANTHROPIC_MODEL:-}"
       # Git identity (optional - set in .env file)
       GIT_AUTHOR_NAME: "${GIT_AUTHOR_NAME:-}"

@@ -3,6 +3,10 @@ start-sandbox.sh
 README_sandbox.md
 !runtime/docker-compose.yml
 !runtime/start-sandbox.sh
+!runtime/start-sandbox.bat
 .env
 .rlibs/
 .rlibs
+start-sandbox.bat
+CLAUDE.md
+!runtime/CLAUDE.md

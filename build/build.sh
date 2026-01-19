@@ -12,7 +12,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
 # Default values
-IMAGE_NAME="claude-sandbox-lite"
+IMAGE_NAME="ccsandbox-node-py"
 IMAGE_TAG="latest"
 CLAUDE_VERSION="latest"
 BUILD_ARGS=""
