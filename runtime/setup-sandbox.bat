@@ -288,9 +288,10 @@ if not exist "%MC_TEMPLATE%" (
 REM Check if CLAUDE.md exists
 if not exist "%MC_TARGET%" (
     REM Create new CLAUDE.md with markers
-    echo %MARKER_BEGIN%> "%MC_TARGET%"
+    REM Use ^> to escape the > in --> so it's not interpreted as redirection
+    echo ^<!-- BEGIN SANDBOX ENVIRONMENT --^>> "%MC_TARGET%"
     type "%MC_TEMPLATE%" >> "%MC_TARGET%"
-    echo %MARKER_END%>> "%MC_TARGET%"
+    echo ^<!-- END SANDBOX ENVIRONMENT --^>>> "%MC_TARGET%"
     echo [OK] Created CLAUDE.md with sandbox instructions
     exit /b 0
 )
@@ -299,10 +300,11 @@ REM Check if markers already exist
 findstr /c:"%MARKER_BEGIN%" "%MC_TARGET%" >nul 2>&1
 if errorlevel 1 (
     REM No markers - append with markers
+    REM Use ^> to escape the > in --> so it's not interpreted as redirection
     echo.>> "%MC_TARGET%"
-    echo %MARKER_BEGIN%>> "%MC_TARGET%"
+    echo ^<!-- BEGIN SANDBOX ENVIRONMENT --^>>> "%MC_TARGET%"
     type "%MC_TEMPLATE%" >> "%MC_TARGET%"
-    echo %MARKER_END%>> "%MC_TARGET%"
+    echo ^<!-- END SANDBOX ENVIRONMENT --^>>> "%MC_TARGET%"
     echo [OK] Appended sandbox instructions to CLAUDE.md
 ) else (
     REM Markers exist - use PowerShell to replace content
