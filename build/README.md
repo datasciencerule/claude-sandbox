@@ -1,6 +1,6 @@
 # Claude Code Sandbox - Build
 
-A lightweight (~1.5GB) Docker image for running Claude Code with direct Anthropic API, AWS Bedrock, or LLM Gateway/Proxy.
+Scripts and configuration to build the `ccsandbox-node-py` Docker image (~1.5GB).
 
 ## Quick Start
 
@@ -12,7 +12,26 @@ A lightweight (~1.5GB) Docker image for running Claude Code with direct Anthropi
 build.bat
 ```
 
-## What's Included
+## Files
+
+| File | Purpose |
+|------|---------|
+| `Dockerfile` | Docker image definition |
+| `build.sh` | Build script for Linux/macOS |
+| `build.bat` | Build script for Windows |
+| `entrypoint.sh` | Container entrypoint (handles UID/GID mapping at runtime) |
+| `python-packages.txt` | Python packages to pre-install in the image |
+
+## Build Options
+
+```bash
+./build.sh                    # Standard build
+./build.sh --no-cache         # Clean rebuild (no cache)
+./build.sh --version 1.0.75   # Specific Claude Code version
+./build.sh --tag my-tag       # Custom image tag
+```
+
+## What's Included in the Image
 
 ### Languages & Runtimes
 - **Node.js 24** (from base image)
@@ -33,80 +52,18 @@ build.bat
 - **curl**, **wget** - HTTP clients
 - **poppler-utils** - PDF utilities
 - **vim**, **nano** - text editors
-- **zsh** with **fzf** - modern shell with fuzzy finder
+- **zsh** with **fzf** - shell with fuzzy finder
 
-## Build Options
+## Customization
 
-```bash
-# Standard build
-./build.sh
+### Adding Python Packages
 
-# Build without cache (clean rebuild)
-./build.sh --no-cache
+Edit `python-packages.txt` to add or remove packages, then rebuild.
 
-# Build with specific Claude Code version
-./build.sh --version 1.0.75
+### Modifying the Image
 
-# Build with custom tag
-./build.sh --tag v1.0
-```
+Edit `Dockerfile` to change system packages, tools, or configuration.
 
-## Image Size
+## After Building
 
-Target: **~1.5GB** (compared to ~6.8GB full image)
-
-| Component | Size |
-|-----------|------|
-| Base (node:24-slim) | ~250MB |
-| System packages | ~300MB |
-| Python packages | ~200MB |
-| AWS CLI + tools | ~400MB |
-| Claude Code + npm | ~350MB |
-
-## Usage
-
-After building, copy the runtime files to your project:
-
-```bash
-cp -r ../runtime/* /path/to/your/project/
-cd /path/to/your/project
-./start-sandbox.sh
-```
-
-## API Configuration
-
-Configure in your project's `.env` file:
-
-### Option 1: Direct Anthropic API
-```bash
-ANTHROPIC_API_KEY=sk-ant-api03-...
-```
-
-### Option 2: AWS Bedrock with Profile
-```bash
-CLAUDE_CODE_USE_BEDROCK=1
-AWS_PROFILE=your-profile
-AWS_REGION=us-east-1
-```
-
-### Option 3: AWS Bedrock with Bearer Token
-```bash
-CLAUDE_CODE_USE_BEDROCK=1
-AWS_BEARER_TOKEN_BEDROCK=ABSK...
-AWS_REGION=us-east-1
-```
-
-### Option 4: LLM Gateway / Proxy
-```bash
-ANTHROPIC_AUTH_TOKEN=sk-ai-v1-...
-ANTHROPIC_BASE_URL=https://your-gateway.example.com
-ANTHROPIC_MODEL=claude-3-5-sonnet-20241022
-```
-
-## What's NOT Included (vs Full Image)
-
-- R language and R packages
-- LibreOffice, ffmpeg, ImageMagick
-- Tesseract OCR, GDAL/GEOS/PROJ
-- Corporate proxy/firewall configuration
-- Heavy scientific computing libraries (scikit-learn, opencv, etc.)
+Use the `runtime/` folder to run the sandbox in your projects. See [runtime/README.md](../runtime/README.md).
