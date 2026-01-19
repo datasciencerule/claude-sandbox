@@ -1,0 +1,22 @@
+name: Release
+
+on:
+  release:
+    types: [created]
+
+jobs:
+  upload-runtime:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Zip runtime folder
+        run: zip -r runtime.zip runtime/
+
+      - name: Upload to release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: runtime.zip
