@@ -66,7 +66,7 @@ export CLAUDE_CODE_GIT_BASH_PATH
 # Ensure HOME is set (some environments like certain CI systems may not have it)
 # This is needed for docker-compose.yml which mounts ${HOME}/.aws
 if [[ -z "$HOME" ]]; then
-    export HOME="$(getent passwd "$(whoami)" | cut -d: -f6)"
+    export HOME=~
 fi
 
 # Export host UID/GID for dynamic user mapping in container
